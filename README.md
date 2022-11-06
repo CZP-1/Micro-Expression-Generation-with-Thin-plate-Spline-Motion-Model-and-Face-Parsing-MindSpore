@@ -6,7 +6,7 @@
 
 </div>
 
-This repository is an implementation of the paper [Micro Expression Generation with Thin-plate Spline Motion Model and Face Parsing](https://dl.acm.org/doi/abs/10.1145/3503161.3551609), published in ACM MM2022. 
+This repository is an **MindSpore** implementation of the paper [Micro Expression Generation with Thin-plate Spline Motion Model and Face Parsing](https://dl.acm.org/doi/abs/10.1145/3503161.3551609), published in ACM MM2022. 
 
 ### Installation
 
