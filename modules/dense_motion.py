@@ -1,11 +1,11 @@
-from unittest.main import main
-from xml.dom import NotFoundErr
-from mindspore import nn
-import mindspore.nn.functional as F
-import mindspore
-from modules.util import Hourglass, AntiAliasInterpolation2d, make_coordinate_grid, kp2gaussian
-from modules.util import to_homogeneous, from_homogeneous, UpBlock2d, TPS
-import math
+from unittest.main import  main
+from xml.dom import  NotFoundErr
+from mindspore import  nn
+import  mindspore.nn.functional as F
+import  mindspore
+from modules.util import  Hourglass, AntiAliasInterpolation2d, make_coordinate_grid, kp2gaussian
+from modules.util import  to_homogeneous, from_homogeneous, UpBlock2d, TPS
+import  math
 
 class DenseMotionNetwork(nn.Module):
     """

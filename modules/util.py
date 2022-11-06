@@ -1,6 +1,6 @@
-from mindspore import nn
-import mindspore.nn.functional as F
-import mindspore
+from mindspore import  nn
+import  mindspore.nn.functional as F
+import  mindspore
 
 
 class TPS:

@@ -1,23 +1,23 @@
-import matplotlib
+import  matplotlib
 matplotlib.use('Agg')
-import sys
-import yaml
-import os
-from argparse import ArgumentParser
-from tqdm import tqdm
-from scipy.spatial import ConvexHull
-import numpy as np
-import imageio
-from skimage.transform import resize
-from skimage import img_as_ubyte
-import pandas as pd
-import mindspore
-from modules.inpainting_network import InpaintingNetwork
-from modules.keypoint_detector import KPDetector
-from modules.dense_motion import DenseMotionNetwork
-from modules.avd_network import AVDNetwork
-from modules.bg_motion_predictor import BGMotionPredictor
-from modules.fg_motion_predictor import FGMotionPredictor
+import  sys
+import  yaml
+import  os
+from argparse import  ArgumentParser
+from tqdm import  tqdm
+from scipy.spatial import  ConvexHull
+import  numpy as np
+import  imageio
+from skimage.transform import  resize
+from skimage import  img_as_ubyte
+import  pandas as pd
+import  mindspore
+from modules.inpainting_network import  InpaintingNetwork
+from modules.keypoint_detector import  KPDetector
+from modules.dense_motion import  DenseMotionNetwork
+from modules.avd_network import  AVDNetwork
+from modules.bg_motion_predictor import  BGMotionPredictor
+from modules.fg_motion_predictor import  FGMotionPredictor
 
 if sys.version_info[0] < 3:
     raise Exception("You must use Python 3 or higher. Recommended version is Python 3.9")
@@ -133,7 +133,7 @@ def make_animation(source_image, source_image_mask, driving_video, inpainting_ne
 
 
 def find_best_frame(source, driving, cpu):
-    import face_alignment
+    import  face_alignment
 
     def normalize_kp(kp):
         kp = kp - kp.mean(axis=0, keepdims=True)

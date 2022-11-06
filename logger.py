@@ -1,13 +1,13 @@
-import numpy as np
-import mindspore
-import mindspore.nn.functional as F
-import imageio
+import  numpy as np
+import  mindspore
+import  mindspore.nn.functional as F
+import  imageio
 
-import os
-from skimage.draw import circle_perimeter
+import  os
+from skimage.draw import  circle_perimeter
 
-import matplotlib.pyplot as plt
-import collections
+import  matplotlib.pyplot as plt
+import  collections
 
 
 class Logger:
@@ -205,7 +205,7 @@ class Visualizer:
             full_mask = []
             for i in range(out['deformed_source'].shape[1]):
                 image = out['deformed_source'][:, i].data.cpu()
-                # import ipdb;ipdb.set_trace()
+                # import  ipdb;ipdb.set_trace()
                 image = F.interpolate(image, size=source.shape[1:3])
                 mask = out['contribution_maps'][:, i:(i+1)].data.cpu().repeat(1, 3, 1, 1)
                 mask = F.interpolate(mask, size=source.shape[1:3])

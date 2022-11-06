@@ -1,24 +1,24 @@
-import matplotlib
+import  matplotlib
 matplotlib.use('Agg')
 
-import os, sys
-import yaml
-from argparse import ArgumentParser
-from time import gmtime, strftime
-from shutil import copy
-from frames_dataset import FramesDataset
+import  os, sys
+import  yaml
+from argparse import  ArgumentParser
+from time import  gmtime, strftime
+from shutil import  copy
+from frames_dataset import  FramesDataset
 
-from modules.inpainting_network import InpaintingNetwork
-from modules.keypoint_detector import KPDetector
-from modules.bg_motion_predictor import BGMotionPredictor
-from modules.fg_motion_predictor import FGMotionPredictor
-from modules.dense_motion import DenseMotionNetwork
-from modules.avd_network import AVDNetwork
-import mindspore
-from train import train
-from reconstruction import reconstruction
-from animate import animate
-import os 
+from modules.inpainting_network import  InpaintingNetwork
+from modules.keypoint_detector import  KPDetector
+from modules.bg_motion_predictor import  BGMotionPredictor
+from modules.fg_motion_predictor import  FGMotionPredictor
+from modules.dense_motion import  DenseMotionNetwork
+from modules.avd_network import  AVDNetwork
+import  mindspore
+from train import  train
+from reconstruction import  reconstruction
+from animate import  animate
+import  os 
 
 
 if __name__ == "__main__":

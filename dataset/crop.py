@@ -1,10 +1,10 @@
 # encoding:utf-8
 
-from xml.dom import NotFoundErr
-import dlib
-import numpy as np
-import cv2
-import os
+from xml.dom import  NotFoundErr
+import  dlib
+import  numpy as np
+import  cv2
+import  os
 
 def rect_to_bb(rect): # 获得人脸矩形的坐标信息
     x = rect.left()

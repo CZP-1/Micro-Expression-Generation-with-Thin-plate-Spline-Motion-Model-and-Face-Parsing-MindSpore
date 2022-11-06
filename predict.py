@@ -1,23 +1,23 @@
-import os
-import sys
+import  os
+import  sys
 sys.path.insert(0, "stylegan-encoder")
-import tempfile
-import warnings
-import imageio
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from skimage.transform import resize
-from skimage import img_as_ubyte
-import mindspore
-import mindspore.dataset.vision.transforms as transforms
-import dlib
-from cog import BasePredictor, Path, Input
+import  tempfile
+import  warnings
+import  imageio
+import  numpy as np
+import  matplotlib.pyplot as plt
+import  matplotlib.animation as animation
+from skimage.transform import  resize
+from skimage import  img_as_ubyte
+import  mindspore
+import  mindspore.dataset.vision.transforms as transforms
+import  dlib
+from cog import  BasePredictor, Path, Input
 
-from demo import load_checkpoints
-from demo import make_animation
-from ffhq_dataset.face_alignment import image_align
-from ffhq_dataset.landmarks_detector import LandmarksDetector
+from demo import  load_checkpoints
+from demo import  make_animation
+from ffhq_dataset.face_alignment import  image_align
+from ffhq_dataset.landmarks_detector import  LandmarksDetector
 
 
 warnings.filterwarnings("ignore")

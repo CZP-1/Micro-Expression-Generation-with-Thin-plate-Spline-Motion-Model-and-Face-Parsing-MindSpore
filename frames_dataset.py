@@ -1,15 +1,15 @@
-import os
-from skimage import io, img_as_float32
-from skimage.color import gray2rgb
-from sklearn.model_selection import train_test_split
-from imageio import mimread
-from skimage.transform import resize
-import numpy as np
-from mindspore.utils.data import Dataset
-from augmentation import AllAugmentationTransform
-import glob
-from functools import partial
-import pandas as pd
+import  os
+from skimage import  io, img_as_float32
+from skimage.color import  gray2rgb
+from sklearn.model_selection import  train_test_split
+from imageio import  mimread
+from skimage.transform import  resize
+import  numpy as np
+from mindspore.utils.data import  Dataset
+from augmentation import  AllAugmentationTransform
+import  glob
+from functools import  partial
+import  pandas as pd
 
 
 def read_video(name, frame_shape):

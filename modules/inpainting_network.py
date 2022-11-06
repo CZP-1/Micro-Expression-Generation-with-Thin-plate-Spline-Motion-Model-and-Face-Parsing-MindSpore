@@ -1,9 +1,9 @@
-from numpy import source
-import mindspore
-from mindspore import nn
-import mindspore.nn.functional as F
-from modules.util import ResBlock2d, SameBlock2d, UpBlock2d, DownBlock2d
-# from modules.dense_motion import DenseMotionNetwork
+from numpy import  source
+import  mindspore
+from mindspore import  nn
+import  mindspore.nn.functional as F
+from modules.util import  ResBlock2d, SameBlock2d, UpBlock2d, DownBlock2d
+# from modules.dense_motion import  DenseMotionNetwork
 
 class InpaintingNetwork(nn.Module):
     """

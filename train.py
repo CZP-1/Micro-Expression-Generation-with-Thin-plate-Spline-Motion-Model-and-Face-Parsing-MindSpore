@@ -1,12 +1,12 @@
-from tqdm import tqdm, trange
-import mindspore
-from mindspore.utils.data import DataLoader
-from logger import Logger
-from modules.model import GeneratorFullModel
-from mindspore.optim.lr_scheduler import MultiStepLR
-from mindspore.nn.utils import clip_grad_norm_
-from frames_dataset import DatasetRepeater
-import math
+from tqdm import  tqdm, trange
+import  mindspore
+from mindspore.utils.data import  DataLoader
+from logger import  Logger
+from modules.model import  GeneratorFullModel
+from mindspore.optim.lr_scheduler import  MultiStepLR
+from mindspore.nn.utils import  clip_grad_norm_
+from frames_dataset import  DatasetRepeater
+import  math
 
 def train(config, inpainting_network, kp_detector, bg_predictor, fg_predictor, dense_motion_network, checkpoint, log_dir, dataset):
     train_params = config['train_params']

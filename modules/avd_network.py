@@ -1,6 +1,6 @@
 
-import mindspore
-from mindspore import nn
+import  mindspore
+from mindspore import  nn
 
 
 class AVDNetwork(nn.Module):

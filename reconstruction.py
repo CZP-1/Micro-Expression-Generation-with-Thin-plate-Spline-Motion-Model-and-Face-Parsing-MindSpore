@@ -1,11 +1,10 @@
-import os
-from tqdm import tqdm
-import mindspore
-from mindspore.utils.data import DataLoader
-from logger import Logger, Visualizer
-import numpy as np
-import imageio
-
+import  os
+from tqdm import  tqdm
+import  mindspore
+from mindspore.utils.data import  DataLoader
+from logger import  Logger, Visualizer
+import  numpy as np
+import  imageio
 
 
 def reconstruction(config, inpainting_network, kp_detector, bg_predictor, dense_motion_network, checkpoint, log_dir, dataset):

@@ -1,6 +1,6 @@
-from mindspore import nn
-import mindspore
-from mindspore.dataset.vision import models
+from mindspore import  nn
+import  mindspore
+from mindspore.dataset.vision import  models
 
 class KPDetector(nn.Module):
     """

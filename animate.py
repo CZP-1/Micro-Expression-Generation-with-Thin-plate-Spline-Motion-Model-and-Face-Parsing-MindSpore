@@ -1,18 +1,17 @@
-import os
-from tqdm import tqdm
+import  os
+from tqdm import  tqdm
 
-import mindspore
-from mindspore.utils.data import DataLoader
+import  mindspore
+from mindspore.utils.data import  DataLoader
 
-from frames_dataset import PairedDataset
-from logger import Logger, Visualizer
-import imageio
-from scipy.spatial import ConvexHull
-import numpy as np
+from frames_dataset import  PairedDataset
+from logger import  Logger, Visualizer
+import  imageio
+from scipy.spatial import  ConvexHull
+import  numpy as np
 
-
-# from sync_batchnorm import DataParallelWithCallback
-from skimage import img_as_ubyte
+# from sync_batchnorm import  DataParallelWithCallback
+from skimage import  img_as_ubyte
 
 def normalize_kp(kp_source, kp_driving, kp_driving_initial, adapt_movement_scale=False,
                  use_relative_movement=False, use_relative_jacobian=False):

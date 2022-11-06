@@ -1,5 +1,5 @@
-import shutil
-import os
+import  shutil
+import  os
 
 parent_dir = {
     'CASMEII':"CASMEII/CASME2_RAW_selected_cropped",

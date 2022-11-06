@@ -2,18 +2,18 @@
 Code from https://github.com/hassony2/torch_videovision
 """
 
-import numbers
-import cv2
-import random
-import numpy as np
-import PIL
+import  numbers
+import  cv2
+import  random
+import  numpy as np
+import  PIL
 
-from skimage.transform import resize, rotate
-import mindspore.dataset.vision
+from skimage.transform import  resize, rotate
+import  mindspore.dataset.vision
 
-import warnings
+import  warnings
 
-from skimage import img_as_ubyte, img_as_float
+from skimage import  img_as_ubyte, img_as_float
 
 
 def crop_clip(clip, min_h, min_w, h, w):
