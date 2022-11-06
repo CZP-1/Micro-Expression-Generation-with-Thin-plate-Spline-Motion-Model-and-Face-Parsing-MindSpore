@@ -1,8 +1,8 @@
 import os
 from tqdm import tqdm
 
-import torch
-from torch.utils.data import DataLoader
+import mindspore
+from mindspore.utils.data import DataLoader
 
 from frames_dataset import PairedDataset
 from logger import Logger, Visualizer
@@ -30,8 +30,8 @@ def normalize_kp(kp_source, kp_driving, kp_driving_initial, adapt_movement_scale
         kp_new['value'] = kp_value_diff + kp_source['value']
 
         if use_relative_jacobian:
-            jacobian_diff = torch.matmul(kp_driving['jacobian'], torch.inverse(kp_driving_initial['jacobian']))
-            kp_new['jacobian'] = torch.matmul(jacobian_diff, kp_source['jacobian'])
+            jacobian_diff = mindspore.matmul(kp_driving['jacobian'], mindspore.inverse(kp_driving_initial['jacobian']))
+            kp_new['jacobian'] = mindspore.matmul(jacobian_diff, kp_source['jacobian'])
 
     return kp_new
 
@@ -55,15 +55,15 @@ def animate(config, generator, kp_detector, checkpoint, log_dir, dataset):
     if not os.path.exists(png_dir):
         os.makedirs(png_dir)
 
-    if torch.cuda.is_available():
-        generator = torch.nn.DataParallel(generator)
-        kp_detector = torch.nn.DataParallel(kp_detector)
+    if mindspore.cuda.is_available():
+        generator = mindspore.nn.DataParallel(generator)
+        kp_detector = mindspore.nn.DataParallel(kp_detector)
 
     generator.eval()
     kp_detector.eval()
 
     for it, x in tqdm(enumerate(dataloader)):
-        with torch.no_grad():
+        with mindspore.no_grad():
             predictions = []
             visualizations = []
 
