@@ -1,23 +1,23 @@
-from torch import nn
-import torch
-import torch.nn.functional as F
+from mindspore import nn
+import mindspore
+import mindspore.nn.functional as F
 from modules.util import AntiAliasInterpolation2d, TPS
-from torchvision import models
+from mindspore.dataset.vision import models
 import numpy as np
 
 
-class Vgg19(torch.nn.Module):
+class Vgg19(mindspore.nn.Module):
     """
     Vgg19 network for perceptual loss. See Sec 3.3.
     """
     def __init__(self, requires_grad=False):
         super(Vgg19, self).__init__()
         vgg_pretrained_features = models.vgg19(pretrained=True).features
-        self.slice1 = torch.nn.Sequential()
-        self.slice2 = torch.nn.Sequential()
-        self.slice3 = torch.nn.Sequential()
-        self.slice4 = torch.nn.Sequential()
-        self.slice5 = torch.nn.Sequential()
+        self.slice1 = mindspore.nn.Sequential()
+        self.slice2 = mindspore.nn.Sequential()
+        self.slice3 = mindspore.nn.Sequential()
+        self.slice4 = mindspore.nn.Sequential()
+        self.slice5 = mindspore.nn.Sequential()
         for x in range(2):
             self.slice1.add_module(str(x), vgg_pretrained_features[x])
         for x in range(2, 7):
@@ -29,9 +29,9 @@ class Vgg19(torch.nn.Module):
         for x in range(21, 30):
             self.slice5.add_module(str(x), vgg_pretrained_features[x])
 
-        self.mean = torch.nn.Parameter(data=torch.Tensor(np.array([0.485, 0.456, 0.406]).reshape((1, 3, 1, 1))),
+        self.mean = mindspore.nn.Parameter(data=mindspore.Tensor(np.array([0.485, 0.456, 0.406]).reshape((1, 3, 1, 1))),
                                        requires_grad=False)
-        self.std = torch.nn.Parameter(data=torch.Tensor(np.array([0.229, 0.224, 0.225]).reshape((1, 3, 1, 1))),
+        self.std = mindspore.nn.Parameter(data=mindspore.Tensor(np.array([0.229, 0.224, 0.225]).reshape((1, 3, 1, 1))),
                                       requires_grad=False)
 
         if not requires_grad:
@@ -49,7 +49,7 @@ class Vgg19(torch.nn.Module):
         return out
 
 
-class ImagePyramide(torch.nn.Module):
+class ImagePyramide(mindspore.nn.Module):
     """
     Create image pyramide for computing pyramide perceptual loss. See Sec 3.3
     """
@@ -71,7 +71,7 @@ def detach_kp(kp):
     return {key: value.detach() for key, value in kp.items()}
 
 
-class GeneratorFullModel(torch.nn.Module):
+class GeneratorFullModel(mindspore.nn.Module):
     """
     Merge all generator related updates into single model for better multi-gpu usage
     """
@@ -96,7 +96,7 @@ class GeneratorFullModel(torch.nn.Module):
         self.scales = train_params['scales']
 
         self.pyramid = ImagePyramide(self.scales, inpainting_network.num_channels)
-        if torch.cuda.is_available():
+        if mindspore.cuda.is_available():
             self.pyramid = self.pyramid.cuda()
 
         self.loss_weights = train_params['loss_weights']
@@ -107,7 +107,7 @@ class GeneratorFullModel(torch.nn.Module):
         
         if sum(self.loss_weights['perceptual']) != 0:
             self.vgg = Vgg19()
-            if torch.cuda.is_available():
+            if mindspore.cuda.is_available():
                 self.vgg = self.vgg.cuda()
 
 
@@ -152,7 +152,7 @@ class GeneratorFullModel(torch.nn.Module):
                 y_vgg = self.vgg(pyramide_real['prediction_' + str(scale)])
 
                 for i, weight in enumerate(self.loss_weights['perceptual']):
-                    value = torch.abs(x_vgg[i] - y_vgg[i].detach()).mean()
+                    value = mindspore.abs(x_vgg[i] - y_vgg[i].detach()).mean()
                     value_total += self.loss_weights['perceptual'][i] * value
             loss_values['perceptual'] = value_total
 
@@ -168,7 +168,7 @@ class GeneratorFullModel(torch.nn.Module):
         
             warped = transform_random.warp_coordinates(transformed_kp['fg_kp'])
             kp_d = kp_driving['fg_kp']
-            value = torch.abs(kp_d - warped).mean()
+            value = mindspore.abs(kp_d - warped).mean()
             loss_values['equivariance_value'] = self.loss_weights['equivariance_value'] * value
 
         # warp loss
@@ -178,29 +178,29 @@ class GeneratorFullModel(torch.nn.Module):
             decode_map = generated['warped_encoder_maps']
             value = 0
             for i in range(len(encode_map)):
-                value += torch.abs(encode_map[i]-decode_map[-i-1]).mean()
+                value += mindspore.abs(encode_map[i]-decode_map[-i-1]).mean()
 
             loss_values['warp_loss'] = self.loss_weights['warp_loss'] * value
         
         # bg loss
         if self.bg_predictor and epoch >= self.bg_start and self.loss_weights['bg'] != 0:
             bg_param_reverse = self.bg_predictor(x['driving'], x['source'])
-            value = torch.matmul(bg_param, bg_param_reverse)
-            eye = torch.eye(3).view(1, 1, 3, 3).type(value.type())
-            value = torch.abs(eye - value).mean()
+            value = mindspore.matmul(bg_param, bg_param_reverse)
+            eye = mindspore.eye(3).view(1, 1, 3, 3).type(value.type())
+            value = mindspore.abs(eye - value).mean()
             loss_values['bg'] = self.loss_weights['bg'] * value
         
         # fg warp loss
         if self.bg_predictor and epoch >= self.bg_start and self.loss_weights['fg_warp_loss'] != 0:
             loss_values['fg_warp_loss'] = \
-                torch.abs(x['driving_mask']*generated['prediction']-x['driving_mask']*x['driving']).mean()
+                mindspore.abs(x['driving_mask']*generated['prediction']-x['driving_mask']*x['driving']).mean()
 
         # fg loss
         if self.fg_predictor and epoch >= self.fg_start and self.loss_weights['fg'] != 0:
             fg_param_reverse = self.fg_predictor(x['driving'], x['source'])
-            value_fg = torch.matmul(fg_param, fg_param_reverse)
-            eye = torch.eye(3).view(1, 1, 3, 3).type(value_fg.type())
-            value_fg = torch.abs(eye - value_fg).mean()
+            value_fg = mindspore.matmul(fg_param, fg_param_reverse)
+            eye = mindspore.eye(3).view(1, 1, 3, 3).type(value_fg.type())
+            value_fg = mindspore.abs(eye - value_fg).mean()
             loss_values['fg'] = self.loss_weights['fg'] * value_fg
             # print(value_fg)
 

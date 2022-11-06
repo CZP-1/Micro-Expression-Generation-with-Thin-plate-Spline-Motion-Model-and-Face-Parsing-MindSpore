@@ -1,6 +1,6 @@
-from torch import nn
-import torch
-from torchvision import models
+from mindspore import nn
+import mindspore
+from mindspore.dataset.vision import models
 
 class KPDetector(nn.Module):
     """
@@ -21,7 +21,7 @@ class KPDetector(nn.Module):
 
         fg_kp = self.fg_encoder(image)
         bs, _, = fg_kp.shape
-        fg_kp = torch.sigmoid(fg_kp)
+        fg_kp = mindspore.sigmoid(fg_kp)
         fg_kp = fg_kp * 2 - 1
         out = {'fg_kp': fg_kp.view(bs, self.num_tps * self.num_kps, -1)} ## bs, self.num_tps*5, 2
 

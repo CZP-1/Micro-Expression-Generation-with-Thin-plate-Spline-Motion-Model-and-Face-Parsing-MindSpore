@@ -1,7 +1,7 @@
 import os
 from tqdm import tqdm
-import torch
-from torch.utils.data import DataLoader
+import mindspore
+from mindspore.utils.data import DataLoader
 from logger import Logger, Visualizer
 import numpy as np
 import imageio
@@ -33,10 +33,10 @@ def reconstruction(config, inpainting_network, kp_detector, bg_predictor, dense_
         bg_predictor.eval()
 
     for it, x in tqdm(enumerate(dataloader)):
-        with torch.no_grad():
+        with mindspore.no_grad():
             predictions = []
             visualizations = []
-            if torch.cuda.is_available():
+            if mindspore.cuda.is_available():
                 x['video'] = x['video'].cuda()
             kp_source = kp_detector(x['video'][:, :, 0])
             for frame_idx in range(x['video'].shape[2]):
@@ -59,7 +59,7 @@ def reconstruction(config, inpainting_network, kp_detector, bg_predictor, dense_
                 visualization = Visualizer(**config['visualizer_params']).visualize(source=source,
                                                                                    driving=driving, out=out)
                 visualizations.append(visualization)
-                loss = torch.abs(out['prediction'] - driving).mean().cpu().numpy()
+                loss = mindspore.abs(out['prediction'] - driving).mean().cpu().numpy()
                 
                 loss_list.append(loss)
             # print(np.mean(loss_list))

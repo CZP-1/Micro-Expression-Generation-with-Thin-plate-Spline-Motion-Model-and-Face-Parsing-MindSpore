@@ -1,6 +1,6 @@
-from torch import nn
-import torch
-from torchvision import models
+from mindspore import nn
+import mindspore
+from mindspore.dataset.vision import models
 
 class BGMotionPredictor(nn.Module):
     """
@@ -14,11 +14,11 @@ class BGMotionPredictor(nn.Module):
         num_features = self.bg_encoder.fc.in_features
         self.bg_encoder.fc = nn.Linear(num_features, 6)
         self.bg_encoder.fc.weight.data.zero_()
-        self.bg_encoder.fc.bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
+        self.bg_encoder.fc.bias.data.copy_(mindspore.tensor([1, 0, 0, 0, 1, 0], dtype=mindspore.float))
 
     def forward(self, source_image, driving_image):
         bs = source_image.shape[0]
-        out = torch.eye(3).unsqueeze(0).repeat(bs, 1, 1).type(source_image.type()) ## bs,3,3
-        prediction = self.bg_encoder(torch.cat([source_image, driving_image], dim=1)) ## 两张图像放在一起求的仿射变换矩阵
+        out = mindspore.eye(3).unsqueeze(0).repeat(bs, 1, 1).type(source_image.type()) ## bs,3,3
+        prediction = self.bg_encoder(mindspore.cat([source_image, driving_image], dim=1)) ## 两张图像放在一起求的仿射变换矩阵
         out[:, :2, :] = prediction.view(bs, 2, 3) ## homo transformation matrix bs 3 3
         return out

@@ -9,7 +9,7 @@ import numpy as np
 import PIL
 
 from skimage.transform import resize, rotate
-import torchvision
+import mindspore.dataset.vision
 
 import warnings
 
@@ -323,15 +323,15 @@ class ColorJitter(object):
             # Create img transform function sequence
             img_transforms = []
             if brightness is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_brightness(img, brightness))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_brightness(img, brightness))
             if saturation is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_saturation(img, saturation))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_saturation(img, saturation))
             if hue is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_hue(img, hue))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_hue(img, hue))
             if contrast is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_contrast(img, contrast))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_contrast(img, contrast))
             random.shuffle(img_transforms)
-            img_transforms = [img_as_ubyte, torchvision.transforms.ToPILImage()] + img_transforms + [np.array,
+            img_transforms = [img_as_ubyte, mindspore.dataset.vision.transforms.ToPILImage()] + img_transforms + [np.array,
                                                                                                      img_as_float]
 
             with warnings.catch_warnings():
@@ -349,13 +349,13 @@ class ColorJitter(object):
             # Create img transform function sequence
             img_transforms = []
             if brightness is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_brightness(img, brightness))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_brightness(img, brightness))
             if saturation is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_saturation(img, saturation))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_saturation(img, saturation))
             if hue is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_hue(img, hue))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_hue(img, hue))
             if contrast is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_contrast(img, contrast))
+                img_transforms.append(lambda img: mindspore.dataset.vision.transforms.functional.adjust_contrast(img, contrast))
             random.shuffle(img_transforms)
 
             # Apply to all videos

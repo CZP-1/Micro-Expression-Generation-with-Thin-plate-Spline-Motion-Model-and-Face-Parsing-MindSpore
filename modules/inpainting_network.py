@@ -1,7 +1,7 @@
 from numpy import source
-import torch
-from torch import nn
-import torch.nn.functional as F
+import mindspore
+from mindspore import nn
+import mindspore.nn.functional as F
 from modules.util import ResBlock2d, SameBlock2d, UpBlock2d, DownBlock2d
 # from modules.dense_motion import DenseMotionNetwork
 
@@ -116,7 +116,7 @@ class InpaintingNetwork(nn.Module):
             if(i==self.num_down_blocks-1):
                 break
 
-            out_masked = torch.cat([out_masked, encode_masked_i], 1)
+            out_masked = mindspore.cat([out_masked, encode_masked_i], 1)
 
         deformed_source = self.deform_input(source_image, deformation)
         output_dict["deformed"] = deformed_source
@@ -129,7 +129,7 @@ class InpaintingNetwork(nn.Module):
             
         out_masked = out_masked * (1 - occlusion_last) + encode_masked_i
         out_masked = self.final(out_masked)
-        out_masked = torch.sigmoid(out_masked)
+        out_masked = mindspore.sigmoid(out_masked)
 
         out_masked = out_masked * (1 - occlusion_last) + deformed_source * occlusion_last
         output_dict["prediction"] = out_masked

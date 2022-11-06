@@ -1,6 +1,6 @@
 import numpy as np
-import torch
-import torch.nn.functional as F
+import mindspore
+import mindspore.nn.functional as F
 import imageio
 
 import os
@@ -45,13 +45,13 @@ class Logger:
         cpk['epoch'] = self.epoch
         cpk_path = os.path.join(self.cpk_dir, '%s-checkpoint.pth.tar' % str(self.epoch).zfill(self.zfill_num)) 
         if not (os.path.exists(cpk_path) and emergent):
-            torch.save(cpk, cpk_path)
+            mindspore.save(cpk, cpk_path)
 
     @staticmethod
     def load_cpk(checkpoint_path, inpainting_network=None, dense_motion_network =None, kp_detector=None, 
                 bg_predictor=None, fg_predictor=None, avd_network=None, optimizer=None, optimizer_bg_predictor=None,
                 optimizer_avd=None):
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = mindspore.load(checkpoint_path)
         if inpainting_network is not None:
             inpainting_network.load_state_dict(checkpoint['inpainting_network'])
         if kp_detector is not None:

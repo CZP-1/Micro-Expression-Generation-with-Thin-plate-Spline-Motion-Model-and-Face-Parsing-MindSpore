@@ -1,6 +1,6 @@
 
-import torch
-from torch import nn
+import mindspore
+from mindspore import nn
 
 
 class AVDNetwork(nn.Module):
@@ -61,7 +61,7 @@ class AVDNetwork(nn.Module):
         pose_emb = self.pose_encoder(kp_random['fg_kp'].view(bs, -1))
         id_emb = self.id_encoder(kp_source['fg_kp'].view(bs, -1))
 
-        rec = self.decoder(torch.cat([pose_emb, id_emb], dim=1))
+        rec = self.decoder(mindspore.cat([pose_emb, id_emb], dim=1))
 
         rec =  {'fg_kp': rec.view(bs, self.num_tps*self.num_kps, -1)}
         return rec

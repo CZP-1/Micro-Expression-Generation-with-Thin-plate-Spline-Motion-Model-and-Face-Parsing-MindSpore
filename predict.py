@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from skimage.transform import resize
 from skimage import img_as_ubyte
-import torch
-import torchvision.transforms as transforms
+import mindspore
+import mindspore.dataset.vision.transforms as transforms
 import dlib
 from cog import BasePredictor, Path, Input
 
@@ -30,7 +30,7 @@ LANDMARKS_DETECTOR = LandmarksDetector("shape_predictor_68_face_landmarks.dat")
 class Predictor(BasePredictor):
     def setup(self):
 
-        self.device = torch.device("cuda:0")
+        self.device = mindspore.device("cuda:0")
         datasets = ["vox", "taichi", "ted", "mgif"]
         (
             self.inpainting,

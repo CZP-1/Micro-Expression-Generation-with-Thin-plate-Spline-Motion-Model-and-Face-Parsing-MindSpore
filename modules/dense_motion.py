@@ -1,8 +1,8 @@
 from unittest.main import main
 from xml.dom import NotFoundErr
-from torch import nn
-import torch.nn.functional as F
-import torch
+from mindspore import nn
+import mindspore.nn.functional as F
+import mindspore
 from modules.util import Hourglass, AntiAliasInterpolation2d, make_coordinate_grid, kp2gaussian
 from modules.util import to_homogeneous, from_homogeneous, UpBlock2d, TPS
 import math
@@ -77,11 +77,11 @@ class DenseMotionNetwork(nn.Module):
         heatmap = gaussian_driving - gaussian_source ## bs, KN, w, h
 
         if self.bg and self.fg:
-            zeros = torch.zeros(heatmap.shape[0], 2, spatial_size[0], spatial_size[1]).type(heatmap.type()).to(heatmap.device)
+            zeros = mindspore.zeros(heatmap.shape[0], 2, spatial_size[0], spatial_size[1]).type(heatmap.type()).to(heatmap.device)
         else:
-            zeros = torch.zeros(heatmap.shape[0], 1, spatial_size[0], spatial_size[1]).type(heatmap.type()).to(heatmap.device)
+            zeros = mindspore.zeros(heatmap.shape[0], 1, spatial_size[0], spatial_size[1]).type(heatmap.type()).to(heatmap.device)
         
-        heatmap = torch.cat([zeros, heatmap], dim=1) ## bs, KN+1(+2), w, h
+        heatmap = mindspore.cat([zeros, heatmap], dim=1) ## bs, KN+1(+2), w, h
 
         return heatmap
 
@@ -102,29 +102,29 @@ class DenseMotionNetwork(nn.Module):
         # affine background transformation
         if not (bg_param is None):
             identity_grid_bg = to_homogeneous(identity_grid)
-            identity_grid_bg = torch.matmul(bg_param.view(bs, 1, 1, 1, 3, 3), identity_grid_bg.unsqueeze(-1)).squeeze(-1)
+            identity_grid_bg = mindspore.matmul(bg_param.view(bs, 1, 1, 1, 3, 3), identity_grid_bg.unsqueeze(-1)).squeeze(-1)
             identity_grid_bg = from_homogeneous(identity_grid_bg) # bs 1 h w 2
         
         # perspective foreground transformation
         if not (fg_param is None):
             identity_grid_fg = to_homogeneous(identity_grid)
-            identity_grid_fg = torch.matmul(fg_param.view(bs, 1, 1, 1, 3, 3), identity_grid_fg.unsqueeze(-1)).squeeze(-1)
+            identity_grid_fg = mindspore.matmul(fg_param.view(bs, 1, 1, 1, 3, 3), identity_grid_fg.unsqueeze(-1)).squeeze(-1)
             identity_grid_fg = from_homogeneous(identity_grid_fg) # bs 1 h w 2
 
-        # transformations = torch.cat([identity_grid_bg, identity_grid_fg, driving_to_source], dim=1) # bs K+2 h w 2
+        # transformations = mindspore.cat([identity_grid_bg, identity_grid_fg, driving_to_source], dim=1) # bs K+2 h w 2
         transformations = driving_to_source # bs K h w 2
         if self.fg:
             if not (fg_param is None):
-                transformations = torch.cat([identity_grid_fg, transformations], dim=1)
+                transformations = mindspore.cat([identity_grid_fg, transformations], dim=1)
             else:
-                transformations = torch.cat([identity_grid, transformations], dim=1)
+                transformations = mindspore.cat([identity_grid, transformations], dim=1)
                 # 这里是在测试的时候满足模型的size要求
         
         if self.bg:
             if not (bg_param is None):
-                transformations = torch.cat([identity_grid_bg, transformations], dim=1)
+                transformations = mindspore.cat([identity_grid_bg, transformations], dim=1)
             else:
-                transformations = torch.cat([identity_grid, transformations], dim=1)
+                transformations = mindspore.cat([identity_grid, transformations], dim=1)
                 # 这里是在测试的时候满足模型的size要求
 
         return transformations
@@ -144,7 +144,7 @@ class DenseMotionNetwork(nn.Module):
         '''
         Dropout for TPS transformations. Eq(7) and Eq(8) in the paper.
         '''
-        drop = (torch.rand(X.shape[0],X.shape[1]) < (1-P)).type(X.type()).to(X.device)
+        drop = (mindspore.rand(X.shape[0],X.shape[1]) < (1-P)).type(X.type()).to(X.device)
         drop[..., 0] = 1
         drop = drop.repeat(X.shape[2],X.shape[3],1,1).permute(2,3,0,1)
 
@@ -171,7 +171,7 @@ class DenseMotionNetwork(nn.Module):
         out_dict['deformed_source'] = deformed_source
         
         deformed_source = deformed_source.view(bs,-1,h,w)
-        input = torch.cat([heatmap_representation, deformed_source], dim=1) # 形变之后的图像和关键点一起输入
+        input = mindspore.cat([heatmap_representation, deformed_source], dim=1) # 形变之后的图像和关键点一起输入
         input = input.view(bs, -1, h, w)
 
         prediction = self.hourglass(input, mode = 1)
@@ -195,13 +195,13 @@ class DenseMotionNetwork(nn.Module):
         occlusion_map = []
         if self.multi_mask:
             for i in range(self.occlusion_num-self.up_nums):
-                occlusion_map.append(torch.sigmoid(self.occlusion[i](prediction[self.up_nums-self.occlusion_num+i])))
+                occlusion_map.append(mindspore.sigmoid(self.occlusion[i](prediction[self.up_nums-self.occlusion_num+i])))
             prediction = prediction[-1]
             for i in range(self.up_nums):
                 prediction = self.up[i](prediction)
-                occlusion_map.append(torch.sigmoid(self.occlusion[i+self.occlusion_num-self.up_nums](prediction)))
+                occlusion_map.append(mindspore.sigmoid(self.occlusion[i+self.occlusion_num-self.up_nums](prediction)))
         else:
-            occlusion_map.append(torch.sigmoid(self.occlusion[0](prediction[-1])))
+            occlusion_map.append(mindspore.sigmoid(self.occlusion[0](prediction[-1])))
 
         out_dict['attention_map'] = [occlusion_map[-1][:,1:]]
         occlusion_map[-1] = occlusion_map[-1][:,:1]

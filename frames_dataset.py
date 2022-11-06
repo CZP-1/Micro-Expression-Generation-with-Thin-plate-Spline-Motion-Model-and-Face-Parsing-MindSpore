@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from imageio import mimread
 from skimage.transform import resize
 import numpy as np
-from torch.utils.data import Dataset
+from mindspore.utils.data import Dataset
 from augmentation import AllAugmentationTransform
 import glob
 from functools import partial

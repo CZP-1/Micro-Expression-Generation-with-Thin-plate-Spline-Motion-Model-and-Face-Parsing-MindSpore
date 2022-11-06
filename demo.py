@@ -11,7 +11,7 @@ import imageio
 from skimage.transform import resize
 from skimage import img_as_ubyte
 import pandas as pd
-import torch
+import mindspore
 from modules.inpainting_network import InpaintingNetwork
 from modules.keypoint_detector import KPDetector
 from modules.dense_motion import DenseMotionNetwork
@@ -67,7 +67,7 @@ def load_checkpoints(config_path, checkpoint_path, device):
     inpainting.to(device)
     avd_network.to(device)
        
-    checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint = mindspore.load(checkpoint_path, map_location=device)
  
     inpainting.load_state_dict(checkpoint['inpainting_network'])
     kp_detector.load_state_dict(checkpoint['kp_detector'])
@@ -89,14 +89,14 @@ def load_checkpoints(config_path, checkpoint_path, device):
 
 def make_animation(source_image, source_image_mask, driving_video, inpainting_network, kp_detector, dense_motion_network, avd_network, bg_predictor, fg_predictor, device, mode = 'relative'):
     assert mode in ['standard', 'relative', 'avd']
-    with torch.no_grad():
+    with mindspore.no_grad():
         predictions = []
-        source = torch.tensor(source_image[np.newaxis].astype(np.float32)).permute(0, 3, 1, 2)
+        source = mindspore.tensor(source_image[np.newaxis].astype(np.float32)).permute(0, 3, 1, 2)
         source = source.to(device)
-        source_mask = torch.tensor(source_image_mask[np.newaxis].astype(np.float32)).permute(0, 3, 1, 2)
+        source_mask = mindspore.tensor(source_image_mask[np.newaxis].astype(np.float32)).permute(0, 3, 1, 2)
         source_mask = source_mask.to(device)
         
-        driving = torch.tensor(np.array(driving_video)[np.newaxis].astype(np.float32)).permute(0, 4, 1, 2, 3).to(device)
+        driving = mindspore.tensor(np.array(driving_video)[np.newaxis].astype(np.float32)).permute(0, 4, 1, 2, 3).to(device)
         
         kp_source = kp_detector(source)
         kp_driving_initial = kp_detector(driving[:, :, 0])
@@ -206,9 +206,9 @@ if __name__ == "__main__":
             driving_video.append(imageio.imread(os.path.join("./dataset/Mixed_dataset/test",drv_vid,im)))
     
         if opt.cpu:
-            device = torch.device('cpu')
+            device = mindspore.device('cpu')
         else:
-            device = torch.device('cuda')
+            device = mindspore.device('cuda')
         
         source_image = resize(source_image, opt.img_shape)[..., :3]
         source_image_mask = resize(source_image_mask, opt.img_shape)[..., :1]

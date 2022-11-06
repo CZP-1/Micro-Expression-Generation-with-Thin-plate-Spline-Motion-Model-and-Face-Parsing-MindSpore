@@ -1,16 +1,16 @@
 from tqdm import tqdm, trange
-import torch
-from torch.utils.data import DataLoader
+import mindspore
+from mindspore.utils.data import DataLoader
 from logger import Logger
 from modules.model import GeneratorFullModel
-from torch.optim.lr_scheduler import MultiStepLR
-from torch.nn.utils import clip_grad_norm_
+from mindspore.optim.lr_scheduler import MultiStepLR
+from mindspore.nn.utils import clip_grad_norm_
 from frames_dataset import DatasetRepeater
 import math
 
 def train(config, inpainting_network, kp_detector, bg_predictor, fg_predictor, dense_motion_network, checkpoint, log_dir, dataset):
     train_params = config['train_params']
-    optimizer = torch.optim.Adam(
+    optimizer = mindspore.optim.Adam(
         [{'params': list(inpainting_network.parameters()) +
                     list(dense_motion_network.parameters()) +
                     list(kp_detector.parameters()), 'initial_lr': train_params['lr_generator']}],lr=train_params['lr_generator'], betas=(0.5, 0.999), weight_decay = 1e-4)
@@ -25,7 +25,7 @@ def train(config, inpainting_network, kp_detector, bg_predictor, fg_predictor, d
         print("fg_predictor created")
         param_bg_fg += list(fg_predictor.parameters())
 
-    optimizer_bg_predictor = torch.optim.Adam(
+    optimizer_bg_predictor = mindspore.optim.Adam(
         [{'params':param_bg_fg,'initial_lr': train_params['lr_generator']}],
         lr=train_params['lr_generator'], betas=(0.5, 0.999), weight_decay = 1e-4)
 
@@ -53,8 +53,8 @@ def train(config, inpainting_network, kp_detector, bg_predictor, fg_predictor, d
 
     generator_full = GeneratorFullModel(kp_detector, bg_predictor, fg_predictor, dense_motion_network, inpainting_network, train_params)
 
-    if torch.cuda.is_available():
-        generator_full = torch.nn.DataParallel(generator_full).cuda()  
+    if mindspore.cuda.is_available():
+        generator_full = mindspore.nn.DataParallel(generator_full).cuda()  
         
     bg_start = train_params['bg_start']
     fg_start = train_params['fg_start']
@@ -63,7 +63,7 @@ def train(config, inpainting_network, kp_detector, bg_predictor, fg_predictor, d
                 checkpoint_freq=train_params['checkpoint_freq']) as logger:
         for epoch in trange(start_epoch, train_params['num_epochs']):
             for _, x in tqdm(enumerate(dataloader)):
-                if(torch.cuda.is_available()):
+                if(mindspore.cuda.is_available()):
                     x['driving'] = x['driving'].cuda()
                     x['source'] = x['source'].cuda()
                     x['source_mask'] = x['source_mask'].cuda()

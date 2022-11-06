@@ -1,6 +1,6 @@
-from torch import nn
-import torch.nn.functional as F
-import torch
+from mindspore import nn
+import mindspore.nn.functional as F
+import mindspore
 
 
 class TPS:
@@ -11,12 +11,12 @@ class TPS:
         self.bs = bs
         self.mode = mode
         if mode == 'random':
-            noise = torch.normal(mean=0, std=kwargs['sigma_affine'] * torch.ones([bs, 2, 3]))
-            self.theta = noise + torch.eye(2, 3).view(1, 2, 3)
+            noise = mindspore.normal(mean=0, std=kwargs['sigma_affine'] * mindspore.ones([bs, 2, 3]))
+            self.theta = noise + mindspore.eye(2, 3).view(1, 2, 3)
             self.control_points = make_coordinate_grid((kwargs['points_tps'], kwargs['points_tps']), type=noise.type())
             self.control_points = self.control_points.unsqueeze(0)
-            self.control_params = torch.normal(mean=0, 
-                        std=kwargs['sigma_tps'] * torch.ones([bs, 1, kwargs['points_tps'] ** 2]))
+            self.control_params = mindspore.normal(mean=0, 
+                        std=kwargs['sigma_tps'] * mindspore.ones([bs, 1, kwargs['points_tps'] ** 2]))
         elif mode == 'kp':
             kp_1 = kwargs["kp_1"]
             kp_2 = kwargs["kp_2"]
@@ -24,25 +24,25 @@ class TPS:
             kp_type = kp_1.type()
             self.gs = kp_1.shape[1]
             n = kp_1.shape[2]
-            K = torch.norm(kp_1[:,:,:, None]-kp_1[:,:, None, :], dim=4, p=2) # bs K N N
+            K = mindspore.norm(kp_1[:,:,:, None]-kp_1[:,:, None, :], dim=4, p=2) # bs K N N
             K = K**2
-            K = K * torch.log(K+1e-9)
+            K = K * mindspore.log(K+1e-9)
             
             # 调整为齐次
-            one1 = torch.ones(self.bs, kp_1.shape[1], kp_1.shape[2], 1).to(device).type(kp_type)
-            kp_1p = torch.cat([kp_1,one1], 3) # bs K N 3
+            one1 = mindspore.ones(self.bs, kp_1.shape[1], kp_1.shape[2], 1).to(device).type(kp_type)
+            kp_1p = mindspore.cat([kp_1,one1], 3) # bs K N 3
             
-            zero = torch.zeros(self.bs, kp_1.shape[1], 3, 3).to(device).type(kp_type)
-            P = torch.cat([kp_1p, zero],2) # bs K N+3 3
-            L = torch.cat([K,kp_1p.permute(0,1,3,2)],2) # bs K N+3 N
-            L = torch.cat([L,P],3) # bs K N+3 N+3
+            zero = mindspore.zeros(self.bs, kp_1.shape[1], 3, 3).to(device).type(kp_type)
+            P = mindspore.cat([kp_1p, zero],2) # bs K N+3 3
+            L = mindspore.cat([K,kp_1p.permute(0,1,3,2)],2) # bs K N+3 N
+            L = mindspore.cat([L,P],3) # bs K N+3 N+3
         
-            zero = torch.zeros(self.bs, kp_1.shape[1], 3, 2).to(device).type(kp_type)
-            Y = torch.cat([kp_2, zero], 2) # bs K N+3 2
-            one = torch.eye(L.shape[2]).expand(L.shape).to(device).type(kp_type)*0.01 # bs K N+3 N+3
+            zero = mindspore.zeros(self.bs, kp_1.shape[1], 3, 2).to(device).type(kp_type)
+            Y = mindspore.cat([kp_2, zero], 2) # bs K N+3 2
+            one = mindspore.eye(L.shape[2]).expand(L.shape).to(device).type(kp_type)*0.01 # bs K N+3 N+3
             L = L + one # 数值稳定性
 
-            param = torch.matmul(torch.inverse(L),Y) # bs K N+3 2
+            param = mindspore.matmul(mindspore.inverse(L),Y) # bs K N+3 2
             self.theta = param[:,:,n:,:].permute(0,1,3,2) # bs K 2 3
 
             self.control_points = kp_1
@@ -65,25 +65,25 @@ class TPS:
         control_params = self.control_params.type(coordinates.type()).to(coordinates.device)
 
         if self.mode == 'kp':
-            transformed = torch.matmul(theta[:, :, :, :2], coordinates.permute(0, 2, 1)) + theta[:, :, :, 2:]
+            transformed = mindspore.matmul(theta[:, :, :, :2], coordinates.permute(0, 2, 1)) + theta[:, :, :, 2:]
 
             distances = coordinates.view(coordinates.shape[0], 1, 1, -1, 2) - control_points.view(self.bs, control_points.shape[1], -1, 1, 2)
 
             distances = distances ** 2
             result = distances.sum(-1)
-            result = result * torch.log(result + 1e-9)
-            result = torch.matmul(result.permute(0, 1, 3, 2), control_params)
+            result = result * mindspore.log(result + 1e-9)
+            result = mindspore.matmul(result.permute(0, 1, 3, 2), control_params)
             transformed = transformed.permute(0, 1, 3, 2) + result
 
         elif self.mode == 'random':
             theta = theta.unsqueeze(1)
-            transformed = torch.matmul(theta[:, :, :, :2], coordinates.unsqueeze(-1)) + theta[:, :, :, 2:]
+            transformed = mindspore.matmul(theta[:, :, :, :2], coordinates.unsqueeze(-1)) + theta[:, :, :, 2:]
             transformed = transformed.squeeze(-1)
             ances = coordinates.view(coordinates.shape[0], -1, 1, 2) - control_points.view(1, 1, -1, 2)
             distances = ances ** 2
 
             result = distances.sum(-1)
-            result = result * torch.log(result + 1e-9)
+            result = result * mindspore.log(result + 1e-9)
             result = result * control_params
             result = result.sum(dim=2).view(self.bs, coordinates.shape[1], 1)
             transformed = transformed + result
@@ -111,7 +111,7 @@ def kp2gaussian(kp, spatial_size, kp_variance):
 
     mean_sub = (coordinate_grid - kp) # 坐标格子里的坐标和[x,y]相减
 
-    out = torch.exp(-0.5 * (mean_sub ** 2).sum(-1) / kp_variance)
+    out = mindspore.exp(-0.5 * (mean_sub ** 2).sum(-1) / kp_variance)
 
     return out # bs KN w h
 
@@ -121,8 +121,8 @@ def make_coordinate_grid(spatial_size, type):
     Create a meshgrid [-1,1] x [-1,1] of given spatial_size.
     """
     h, w = spatial_size
-    x = torch.arange(w).type(type)
-    y = torch.arange(h).type(type)
+    x = mindspore.arange(w).type(type)
+    y = mindspore.arange(h).type(type)
 
     x = (2 * (x / (w - 1)) - 1)
     y = (2 * (y / (h - 1)) - 1)
@@ -130,7 +130,7 @@ def make_coordinate_grid(spatial_size, type):
     yy = y.view(-1, 1).repeat(1, w)
     xx = x.view(1, -1).repeat(h, 1)
 
-    meshed = torch.cat([xx.unsqueeze_(2), yy.unsqueeze_(2)], 2)
+    meshed = mindspore.cat([xx.unsqueeze_(2), yy.unsqueeze_(2)], 2)
 
     return meshed ## h w 2
 
@@ -267,7 +267,7 @@ class Decoder(nn.Module):
         for up_block in self.up_blocks:
             out = up_block(out)
             skip = x.pop()
-            out = torch.cat([out, skip], dim=1)
+            out = mindspore.cat([out, skip], dim=1)
             outs.append(out)
         if(mode == 0):
             return out
@@ -307,18 +307,18 @@ class AntiAliasInterpolation2d(nn.Module):
         # The gaussian kernel is the product of the
         # gaussian function of each dimension.
         kernel = 1
-        meshgrids = torch.meshgrid(
+        meshgrids = mindspore.meshgrid(
             [
-                torch.arange(size, dtype=torch.float32)
+                mindspore.arange(size, dtype=mindspore.float32)
                 for size in kernel_size
                 ]
         )
         for size, std, mgrid in zip(kernel_size, sigma, meshgrids):
             mean = (size - 1) / 2
-            kernel *= torch.exp(-(mgrid - mean) ** 2 / (2 * std ** 2))
+            kernel *= mindspore.exp(-(mgrid - mean) ** 2 / (2 * std ** 2))
 
         # Make sure sum of values in gaussian kernel equals 1.
-        kernel = kernel / torch.sum(kernel)
+        kernel = kernel / mindspore.sum(kernel)
         # Reshape to depthwise convolutional weight
         kernel = kernel.view(1, 1, *kernel.size())
         kernel = kernel.repeat(channels, *[1] * (kernel.dim() - 1))
@@ -341,9 +341,9 @@ class AntiAliasInterpolation2d(nn.Module):
 def to_homogeneous(coordinates):
     ones_shape = list(coordinates.shape)
     ones_shape[-1] = 1
-    ones = torch.ones(ones_shape).type(coordinates.type())
+    ones = mindspore.ones(ones_shape).type(coordinates.type())
 
-    return torch.cat([coordinates, ones], dim=-1)
+    return mindspore.cat([coordinates, ones], dim=-1)
 
 def from_homogeneous(coordinates):
     return coordinates[..., :2] / coordinates[..., 2:3]

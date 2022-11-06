@@ -14,7 +14,7 @@ from modules.bg_motion_predictor import BGMotionPredictor
 from modules.fg_motion_predictor import FGMotionPredictor
 from modules.dense_motion import DenseMotionNetwork
 from modules.avd_network import AVDNetwork
-import torch
+import mindspore
 from train import train
 from reconstruction import reconstruction
 from animate import animate
@@ -47,28 +47,28 @@ if __name__ == "__main__":
     inpainting = InpaintingNetwork(**config['model_params']['generator_params'],
                                         **config['model_params']['common_params'])
 
-    if torch.cuda.is_available():
-        cuda_device = torch.device('cuda:'+str(opt.device_ids[0]))
+    if mindspore.cuda.is_available():
+        cuda_device = mindspore.device('cuda:'+str(opt.device_ids[0]))
         inpainting.to(cuda_device)
 
     kp_detector = KPDetector(**config['model_params']['common_params'])
     dense_motion_network = DenseMotionNetwork(**config['model_params']['common_params'],
                                               **config['model_params']['dense_motion_params'])
 
-    if torch.cuda.is_available():
+    if mindspore.cuda.is_available():
         kp_detector.to(opt.device_ids[0])
         dense_motion_network.to(opt.device_ids[0])
 
     bg_predictor = None
     if (config['model_params']['common_params']['bg']):
         bg_predictor = BGMotionPredictor()
-        if torch.cuda.is_available():
+        if mindspore.cuda.is_available():
             bg_predictor.to(opt.device_ids[0])
 
     fg_predictor = None
     if (config['model_params']['common_params']['fg']):
         fg_predictor = FGMotionPredictor()
-        if torch.cuda.is_available():
+        if mindspore.cuda.is_available():
             fg_predictor.to(opt.device_ids[0])
 
     avd_network = None
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         avd_network = AVDNetwork(num_tps=config['model_params']['common_params']['num_tps'],
                              num_kps=config['model_params']['common_params']['num_kps'],
                              **config['model_params']['avd_network_params'])
-        if torch.cuda.is_available():
+        if mindspore.cuda.is_available():
             avd_network.to(opt.device_ids[0])
 
     dataset = FramesDataset(is_train=(opt.mode.startswith('train')), **config['dataset_params'])
